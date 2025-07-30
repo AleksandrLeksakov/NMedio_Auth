@@ -1,16 +1,17 @@
 package ru.netology.nmedia.repository
 
-import androidx.lifecycle.*
+import androidx.lifecycle.map
+import okhttp3.internal.concurrent.TaskRunner.Companion.logger
 import okio.IOException
-import ru.netology.nmedia.api.*
+import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
-import ru.netology.nmedia.entity.toDto
 import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
+
 
 class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
     override val data = dao.getAll().map { posts ->
@@ -61,22 +62,22 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
         }
     }
 
+
     override suspend fun likeById(id: Long) {
+        var originalPost: PostEntity? = null
+
         try {
-            // Получаем пост из базы
-            val postEntity = dao.getById(id) ?: return
-            val post = postEntity.toDto()
+            // 1. Сохраняем оригинальное состояние
+            originalPost = dao.getById(id) ?: return
 
-            // Создаем обновленную версию поста
-            val updatedPost = post.copy(
-                likedByMe = !post.likedByMe,
-                likes = if (post.likedByMe) post.likes - 1 else post.likes + 1
+            // 2. Оптимистичное обновление
+            val updatedPost = originalPost.copy(
+                likedByMe = !originalPost.likedByMe,
+                likes = if (originalPost.likedByMe) originalPost.likes - 1 else originalPost.likes + 1
             )
+            dao.insert(updatedPost)
 
-            // Сохраняем локально
-            dao.insert(PostEntity.fromDto(updatedPost))
-
-            // Отправляем на сервер
+            // 3. Отправка на сервер
             val response = if (updatedPost.likedByMe) {
                 PostsApi.service.likeById(id)
             } else {
@@ -86,10 +87,21 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
-        } catch (e: IOException) {
-            throw NetworkError
         } catch (e: Exception) {
-            throw UnknownError
+            // 4. Откат изменений при ошибке
+            originalPost?.let {
+                try {
+                    dao.insert(it)
+                } catch (e: Exception) {
+                    logger.severe("Failed to revert like changes: ${e.message}")
+                }
+            }
+
+            when (e) {
+                is IOException -> throw NetworkError
+                is ApiError -> throw e
+                else -> throw UnknownError
+            }
         }
     }
 }
