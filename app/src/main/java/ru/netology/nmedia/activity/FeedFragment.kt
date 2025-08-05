@@ -67,6 +67,9 @@ class FeedFragment : Fragment() {
             adapter.submitList(state.posts)
             binding.emptyText.isVisible = state.empty
         }
+        viewModel.newerCount.observe(viewLifecycleOwner) {
+            println(it)
+        }
 
         binding.swiperefresh.setOnRefreshListener {
             viewModel.refreshPosts()
