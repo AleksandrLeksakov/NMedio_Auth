@@ -20,4 +20,11 @@
     <string name="notification_user_liked">User %1$s liked %2$s\'s post</string>
     <string name="channel_remote_name">Server notifications</string>
     <string name="channel_remote_description">Notifications from remote server</string>
+    <plurals name="new_posts_notification" translatable="false">
+        <item quantity="one">У вас %d новый пост</item>
+        <item quantity="few">У вас %d новых поста</item>
+        <item quantity="many">У вас %d новых постов</item>
+        <item quantity="other">У вас %d новых постов</item>
+    </plurals>
+    <string name="show">Show</string>
 </resources>
