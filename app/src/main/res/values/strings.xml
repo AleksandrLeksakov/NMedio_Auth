@@ -27,4 +27,5 @@
         <item quantity="other">У вас %d новых постов</item>
     </plurals>
     <string name="show">Show</string>
+    <string name="remove">Remove</string>
 </resources>

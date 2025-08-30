@@ -6,7 +6,11 @@
     android:layout_height="match_parent"
     tools:context=".activity.NewPostFragment">
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
     <LinearLayout
+        android:padding="48dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -18,7 +22,8 @@
             android:background="@android:color/transparent"
             android:gravity="start|top"
             android:inputType="textMultiLine"
-            android:padding="@dimen/common_spacing" />
+            android:padding="@dimen/common_spacing"
+            tools:text="@tools:sample/lorem[20]" />
 
         <FrameLayout
             android:id="@+id/photoContainer"
@@ -27,15 +32,23 @@
 
             <ImageView
                 android:id="@+id/photo"
-                tools:src="@tools:sample/avatars"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                tools:src="@tools:sample/avatars" />
 
-            </ImageView>
+            <Button
+                android:id="@+id/remove"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|bottom"
+                android:text="@string/remove" />
+
 
         </FrameLayout>
 
     </LinearLayout>
+    </ScrollView>
 
 
     <LinearLayout
