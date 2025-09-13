@@ -27,7 +27,7 @@ class ImageFragment : Fragment() {
         val imageUrl = arguments?.getString("imageUrl") ?: return
 
         Glide.with(requireContext())
-            .load("${BuildConfig.BASE_URL}/images/$imageUrl")
+            .load("${BuildConfig.BASE_URL}/media/$imageUrl")
             .into(binding.fullscreenImage)
 
         binding.fullscreenImage.setOnClickListener {

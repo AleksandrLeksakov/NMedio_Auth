@@ -63,7 +63,7 @@ class PostViewHolder(
                     imageProgress.isVisible = true
 
                     Glide.with(postImage.context)
-                        .load("${BuildConfig.BASE_URL}/images/${attachment.url}") // ДОБАВЛЕН BASE_URL
+                        .load("${BuildConfig.BASE_URL}/media/${attachment.url}")
                         .placeholder(R.drawable.ic_placeholder)
                         .error(R.drawable.ic_error)
                         .listener(object : RequestListener<Drawable> {
