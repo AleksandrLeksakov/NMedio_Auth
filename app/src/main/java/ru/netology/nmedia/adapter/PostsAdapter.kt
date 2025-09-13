@@ -19,6 +19,7 @@ import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.view.loadCircleCrop
+import android.widget.PopupMenu
 
 interface OnInteractionListener {
     fun onLike(post: Post) {}
@@ -100,6 +101,28 @@ class PostViewHolder(
             } ?: run {
                 postImage.isVisible = false
                 imageProgress.isVisible = false
+            }
+
+
+
+            menu.setOnClickListener {
+                PopupMenu(it.context, it).apply {
+                    inflate(R.menu.options_post)
+                    setOnMenuItemClickListener { item ->
+                        when (item.itemId) {
+                            R.id.remove -> {
+                                onInteractionListener.onRemove(post)
+                                true
+                            }
+                            R.id.edit -> {
+                                onInteractionListener.onEdit(post)
+                                true
+                            }
+
+                            else -> false
+                        }
+                    }
+                }.show()
             }
 
 
