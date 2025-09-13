@@ -1,13 +1,17 @@
 package ru.netology.nmedia.adapter
 
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
@@ -52,58 +56,71 @@ class PostViewHolder(
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
 
+            // Отображение картинки
             post.attachment?.let { attachment ->
                 if (attachment.type == AttachmentType.IMAGE) {
                     postImage.isVisible = true
-                    postImage.loadCircleCrop("${BuildConfig.BASE_URL}/images/${attachment.url}")
+                    imageProgress.isVisible = true
+
+                    Glide.with(postImage.context)
+                        .load("${BuildConfig.BASE_URL}/images/${attachment.url}") // ДОБАВЛЕН BASE_URL
+                        .placeholder(R.drawable.ic_placeholder)
+                        .error(R.drawable.ic_error)
+                        .listener(object : RequestListener<Drawable> {
+                            override fun onLoadFailed(
+                                e: GlideException?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                imageProgress.isVisible = false
+                                return false
+                            }
+
+                            override fun onResourceReady(
+                                resource: Drawable?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                imageProgress.isVisible = false
+                                return false
+                            }
+                        })
+                        .into(postImage)
 
                     postImage.setOnClickListener {
                         onInteractionListener.onImageClick(post, attachment)
                     }
                 } else {
                     postImage.isVisible = false
+                    imageProgress.isVisible = false
                 }
             } ?: run {
                 postImage.isVisible = false
+                imageProgress.isVisible = false
             }
 
-            menu.setOnClickListener {
-                PopupMenu(it.context, it).apply {
-                    inflate(R.menu.options_post)
-                    setOnMenuItemClickListener { item ->
-                        when (item.itemId) {
-                            R.id.remove -> {
-                                onInteractionListener.onRemove(post)
-                                true
-                            }
-                            R.id.edit -> {
-                                onInteractionListener.onEdit(post)
-                                true
-                            }
 
-                            else -> false
-                        }
-                    }
-                }.show()
-            }
+                like.setOnClickListener {
+                    onInteractionListener.onLike(post)
+                }
 
-            like.setOnClickListener {
-                onInteractionListener.onLike(post)
-            }
-
-            share.setOnClickListener {
-                onInteractionListener.onShare(post)
+                share.setOnClickListener {
+                    onInteractionListener.onShare(post)
+                }
             }
         }
     }
-}
 
-class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
-    override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean {
-        return oldItem.id == newItem.id
+    class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
+        override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean {
+            return oldItem == newItem
+        }
     }
 
-    override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean {
-        return oldItem == newItem
-    }
-}

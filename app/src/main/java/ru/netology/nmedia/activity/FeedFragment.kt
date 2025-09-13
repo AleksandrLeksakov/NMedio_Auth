@@ -41,6 +41,12 @@ class FeedFragment : Fragment() {
                 findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
             }
 
+            override fun onImageClick(post: Post, attachment: Attachment) {
+                val action = FeedFragmentDirections
+                    .actionFeedFragmentToImageFragment(imageUrl = attachment.url)
+                findNavController().navigate(action)
+            }
+
             override fun onLike(post: Post) {
                 viewModel.likeById(post.id)
             }
