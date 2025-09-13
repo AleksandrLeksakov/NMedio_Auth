@@ -3,12 +3,16 @@ package ru.netology.nmedia.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
+import ru.netology.nmedia.dto.Attachment
+import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.view.loadCircleCrop
 
@@ -17,6 +21,7 @@ interface OnInteractionListener {
     fun onEdit(post: Post) {}
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
+    fun onImageClick(post: Post, attachment: Attachment) {}
 }
 
 class PostsAdapter(
@@ -46,6 +51,21 @@ class PostViewHolder(
             avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
+
+            post.attachment?.let { attachment ->
+                if (attachment.type == AttachmentType.IMAGE) {
+                    postImage.isVisible = true
+                    postImage.loadCircleCrop("${BuildConfig.BASE_URL}/images/${attachment.url}")
+
+                    postImage.setOnClickListener {
+                        onInteractionListener.onImageClick(post, attachment)
+                    }
+                } else {
+                    postImage.isVisible = false
+                }
+            } ?: run {
+                postImage.isVisible = false
+            }
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {

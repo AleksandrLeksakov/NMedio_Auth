@@ -19,16 +19,18 @@
             android:id="@+id/edit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:autofillHints=""
             android:background="@android:color/transparent"
             android:gravity="start|top"
             android:inputType="textMultiLine"
             android:padding="@dimen/common_spacing"
-            tools:text="@tools:sample/lorem[20]" />
+            tools:text="@tools:sample/lorem/random[20]" />
 
         <FrameLayout
             android:id="@+id/photoContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/photo"
@@ -46,7 +48,6 @@
 
 
         </FrameLayout>
-
     </LinearLayout>
     </ScrollView>
 
@@ -56,7 +57,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="?colorSurface"
+        android:background="@color/colorAccent"
         android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton

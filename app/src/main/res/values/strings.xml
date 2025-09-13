@@ -27,5 +27,6 @@
         <item quantity="other">У вас %d новых постов</item>
     </plurals>
     <string name="show">Show</string>
-    <string name="remove">Remove</string>
+    <string name="remove" translatable="false">Remove</string>
+    <string name="image_picker_error" translatable="true">image picker error</string>
 </resources>

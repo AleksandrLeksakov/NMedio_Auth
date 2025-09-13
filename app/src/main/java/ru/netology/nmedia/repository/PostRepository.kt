@@ -3,6 +3,7 @@ package ru.netology.nmedia.repository
 import androidx.lifecycle.LiveData
 import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.dto.Post
+import java.io.File
 
 interface PostRepository {
     /**
@@ -32,7 +33,7 @@ interface PostRepository {
      * @throws ApiError при ошибках API
      * @throws UnknownError при других ошибках
      */
-    suspend fun save(post: Post)
+    suspend fun save(post: Post, photo: File?)
 
     /**
      * Удаляет пост по идентификатору.

@@ -1,6 +1,7 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -9,11 +10,14 @@ import kotlinx.coroutines.launch
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModelState
+import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
 import ru.netology.nmedia.util.SingleLiveEvent
+import java.io.File
 import java.io.IOException
 
+//private val PostViewModel.it: Post
 private val empty = Post(
     id = 0,
     content = "",
@@ -34,6 +38,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val data: LiveData<List<Post>> = repository.data
         .map { posts -> posts.filter { !it.isHidden } }
         .asLiveData(Dispatchers.Default)
+
+    // сохранить фото
+    private val _photo = MutableLiveData<PhotoModel?>(null)
+val photo: LiveData<PhotoModel?>
+    get() = _photo
 
     // Количество скрытых постов
     val hiddenCount: LiveData<Int> = repository.hiddenCount
@@ -63,6 +72,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     init {
         loadPosts()
         loadNewPosts()
+    }
+
+    fun savePhoto(uri: Uri, file: File) {
+        _photo.value = PhotoModel(uri, file)
+    }
+
+    fun removePhoto() {
+        _photo.value = null
     }
 
     // Загрузка новых постов (свежих чем текущие)
@@ -112,7 +129,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             _postCreated.value = Unit
             viewModelScope.launch {
                 try {
-                    repository.save(post)
+                    val photoFile = _photo.value?.file
+                    repository.save(post, photoFile)
+                    _photo.value = null // очищаем фото после сохранения
                     _dataState.value = FeedModelState()
                 } catch (e: Exception) {
                     _dataState.value = FeedModelState(error = true)
