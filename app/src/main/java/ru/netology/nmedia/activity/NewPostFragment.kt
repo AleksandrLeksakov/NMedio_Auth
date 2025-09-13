@@ -110,7 +110,7 @@ class NewPostFragment : Fragment() {
             ImagePicker.with(this)
                 .crop()
                 .maxResultSize(MAX_SIZE, MAX_SIZE)
-                 .provider(ImageProvider.CAMERA)
+                .galleryOnly()
                 .createIntent(imagePickerLauncher::launch)
         }
 
@@ -121,6 +121,7 @@ class NewPostFragment : Fragment() {
           }
             binding.photoContainer.isVisible = true
             binding.photo.setImageURI(photo.uri)
+
         }
 
 binding.remove.setOnClickListener { viewModel.removePhoto() }
