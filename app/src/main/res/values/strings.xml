@@ -29,4 +29,7 @@
     <string name="show">Show</string>
     <string name="remove" translatable="false">Remove</string>
     <string name="image_picker_error" translatable="true">image picker error</string>
+    <string name="sign_in">sign_in</string>
+    <string name="sign_up">sign_up</string>
+    <string name="sign_out">sign_out</string>
 </resources>

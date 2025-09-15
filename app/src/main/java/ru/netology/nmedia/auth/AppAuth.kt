@@ -22,7 +22,7 @@ class AppAuth private constructor(context: Context) {
     }
 
     @Synchronized
-    fun setAuth(id: Long, token: String) {
+    fun saveAuth(id: Long, token: String) {
         _state.value = Token(id, token)
         prefs.edit {
             putLong(ID_KEY, id)

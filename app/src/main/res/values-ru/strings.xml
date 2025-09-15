@@ -23,4 +23,7 @@
     <string name="channel_remote_description">Уведомления с удалённого сервера</string>
     <string name="show">Показать</string>
     <string name="image_picker_error">ошибка выбора изображения</string>
+    <string name="sign_in">Вход</string>
+    <string name="sign_up">Регистрация</string>
+    <string name="sign_out">Выход</string>
 </resources>

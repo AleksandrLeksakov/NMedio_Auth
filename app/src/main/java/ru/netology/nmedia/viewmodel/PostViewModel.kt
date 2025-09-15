@@ -5,10 +5,13 @@ import android.net.Uri
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
@@ -20,13 +23,16 @@ import java.io.IOException
 //private val PostViewModel.it: Post
 private val empty = Post(
     id = 0,
+    authorId = 0L,
     content = "",
     author = "",
     authorAvatar = "",
     likedByMe = false,
     likes = 0,
     published = "",
-    isHidden = false
+    isHidden = false,
+    attachment = null
+
 )
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
@@ -35,7 +41,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         PostRepositoryImpl(AppDb.getInstance(context = application).postDao())
 
     // Основные данные постов (фильтруем скрытые)
-    val data: LiveData<List<Post>> = repository.data
+    val data: LiveData<List<Post>> = AppAuth.getInstance().state.flatMapLatest { token ->
+repository.data
+    .map { posts -> posts.map { it.copy(ownedByMe = it.authorId == token?.id) } }
+    }
         .map { posts -> posts.filter { !it.isHidden } }
         .asLiveData(Dispatchers.Default)
 
