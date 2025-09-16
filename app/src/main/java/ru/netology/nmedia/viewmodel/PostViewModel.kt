@@ -41,11 +41,20 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         PostRepositoryImpl(AppDb.getInstance(context = application).postDao())
 
     // Основные данные постов (фильтруем скрытые)
-    val data: LiveData<List<Post>> = AppAuth.getInstance().state.flatMapLatest { token ->
-repository.data
-    .map { posts -> posts.map { it.copy(ownedByMe = it.authorId == token?.id) } }
+    val data: LiveData<FeedModel> = AppAuth.getInstance().state.flatMapLatest { token ->
+        repository.data
+            .map {
+                it.map { post -> post.copy(ownedByMe = token?.id == post.authorId) }
+            }
+            .map { posts ->
+            FeedModel(
+                posts = posts,
+                empty = posts.isEmpty()
+            )
+        }
     }
-        .map { posts -> posts.filter { !it.isHidden } }
+
+
         .asLiveData(Dispatchers.Default)
 
     // сохранить фото

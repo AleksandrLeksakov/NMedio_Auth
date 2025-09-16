@@ -17,7 +17,10 @@ import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.viewmodel.PostViewModel
+
+
 
 class FeedFragment : Fragment() {
     // Переменная для хранения Snackbar (может быть null)
@@ -86,8 +89,9 @@ class FeedFragment : Fragment() {
         }
 
         // Наблюдаем за данными постов
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
-            adapter.submitList(posts) {
+        viewModel.data.observe(viewLifecycleOwner) { state ->
+            adapter.submitList(state.posts) {
+                binding.emptyText.isVisible = state.empty
                 // Прокручиваем вверх при обновлении
                 binding.list.smoothScrollToPosition(0)
             }
@@ -125,6 +129,7 @@ class FeedFragment : Fragment() {
     private fun createEmptyPost(): Post {
         return Post(
             id = 0,
+            authorId = 0L,
             content = "",
             author = "",
             authorAvatar = "",
