@@ -26,4 +26,8 @@
     <string name="sign_in">Вход</string>
     <string name="sign_up">Регистрация</string>
     <string name="sign_out">Выход</string>
+    <string name="fill_all_fields">Заполните все поля</string>
+    <string name="authentication_success">Вход выполнен успешно</string>
+    <string name="authentication_failed">Ошибка аутентификации</string>
+    <string name="signed_out">Выход выполнен успешно</string>
 </resources>

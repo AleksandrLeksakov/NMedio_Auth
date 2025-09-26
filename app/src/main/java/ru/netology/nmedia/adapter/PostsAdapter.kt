@@ -20,6 +20,7 @@ import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.view.loadCircleCrop
 import android.widget.PopupMenu
+import ru.netology.nmedia.auth.AppAuth
 
 interface OnInteractionListener {
     fun onLike(post: Post) {}
@@ -56,6 +57,13 @@ class PostViewHolder(
             avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
+
+            // ВАЖНО: Проверяем авторство через текущего пользователя
+            val currentUserId = AppAuth.getInstance().state.value?.id ?: 0L
+            val isOwnedByMe = post.authorId == currentUserId
+
+            // Показываем меню только для своих постов
+            menu.isVisible = isOwnedByMe
 
             // Отображение картинки
             post.attachment?.let { attachment ->
@@ -103,8 +111,6 @@ class PostViewHolder(
                 imageProgress.isVisible = false
             }
 
-
-menu.isVisible = post.ownedByMe
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
                     inflate(R.menu.options_post)
@@ -118,32 +124,29 @@ menu.isVisible = post.ownedByMe
                                 onInteractionListener.onEdit(post)
                                 true
                             }
-
                             else -> false
                         }
                     }
                 }.show()
             }
 
+            like.setOnClickListener {
+                onInteractionListener.onLike(post)
+            }
 
-                like.setOnClickListener {
-                    onInteractionListener.onLike(post)
-                }
-
-                share.setOnClickListener {
-                    onInteractionListener.onShare(post)
-                }
+            share.setOnClickListener {
+                onInteractionListener.onShare(post)
             }
         }
     }
+}
 
-    class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
-        override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean {
-            return oldItem == newItem
-        }
+class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
+    override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean {
+        return oldItem.id == newItem.id
     }
 
+    override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean {
+        return oldItem == newItem
+    }
+}

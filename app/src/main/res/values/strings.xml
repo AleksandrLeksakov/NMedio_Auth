@@ -29,7 +29,15 @@
     <string name="show">Show</string>
     <string name="remove" translatable="false">Remove</string>
     <string name="image_picker_error" translatable="true">image picker error</string>
+
+
     <string name="sign_in">sign_in</string>
     <string name="sign_up">sign_up</string>
     <string name="sign_out">sign_out</string>
+    <string name="password" translatable="false">Password</string>
+    <string name="login" translatable="false">Login</string>
+    <string name="fill_all_fields">Fill all fields</string>
+    <string name="authentication_success">Successfully signed in</string>
+    <string name="authentication_failed">Authentication failed</string>
+    <string name="signed_out">Signed out successfully</string>
 </resources>

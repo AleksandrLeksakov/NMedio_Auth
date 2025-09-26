@@ -15,20 +15,20 @@ import androidx.core.view.MenuProvider
 import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
-import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.viewmodel.AuthViewModel
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
+
+    private val authViewModel by viewModels<AuthViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         requestNotificationsPermission()
-
-        val authViewModel by viewModels<AuthViewModel>()
 
         addMenuProvider(
             object : MenuProvider {
@@ -37,6 +37,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                     menuInflater: MenuInflater
                 ) {
                     menuInflater.inflate(R.menu.auth_menu, menu)
+
+                    // Наблюдаем за изменениями авторизации
                     authViewModel.isAuthorized.observe(this@AppActivity) { authorized ->
                         menu.setGroupVisible(R.id.unauthenticated, !authorized)
                         menu.setGroupVisible(R.id.authenticated, authorized)
@@ -45,18 +47,34 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
                 override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
                     when (menuItem.itemId) {
-                        R.id.signin, R.id.signup -> {
-                            AppAuth.getInstance().saveAuth(5L, "x-token")
+                        R.id.signin -> {
+                            // Навигация к фрагменту аутентификации
+                            findNavController(R.id.nav_host_fragment)
+                                .navigate(R.id.action_feedFragment_to_signInFragment)
+                            true
+                        }
+
+                        R.id.signup -> {
+                            // Заглушка для регистрации
+                            Snackbar.make(
+                                findViewById(android.R.id.content),
+                                "Registration will be implemented later",
+                                Snackbar.LENGTH_SHORT
+                            ).show()
                             true
                         }
 
                         R.id.logout -> {
+                            authViewModel.logout()
+                            Snackbar.make(
+                                findViewById(android.R.id.content),
+                                getString(R.string.signed_out),
+                                Snackbar.LENGTH_SHORT
+                            ).show()
                             true
                         }
 
                         else -> false
-
-
                     }
             }
         )

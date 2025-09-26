@@ -1,5 +1,6 @@
 package ru.netology.nmedia.api
 
+
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -9,6 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.dto.AuthResponse
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
 
@@ -25,7 +27,7 @@ private val okhttp = OkHttpClient.Builder()
     .addInterceptor { chain ->
       val request = AppAuth.getInstance().state.value?.token?.let {token ->
             chain.request().newBuilder()
-                .header("Authorization", token)
+                .addHeader("Authorization","Bearer $token")
                 .build()
         } ?: chain.request()
         chain.proceed(request)
@@ -41,6 +43,10 @@ private val retrofit = Retrofit.Builder()
     .build()
 
 interface PostsApiService {
+
+
+
+
     @GET("posts")
     suspend fun getAll(): Response<List<Post>>
 
