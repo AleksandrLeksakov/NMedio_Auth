@@ -37,6 +37,15 @@ class AppAuth private constructor(context: Context) {
         _state.value = null
     }
 
+
+    fun getMyId(): Long? {
+        return _state.value?.id
+    }
+
+    fun isMyId(id: Long?): Boolean {
+        return id == null || id == getMyId()
+    }
+
     companion object {
         private const val ID_KEY = "ID_KEY"
         private const val TOKEN_KEY = "TOKEN_KEY"

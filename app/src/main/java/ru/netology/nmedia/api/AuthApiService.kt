@@ -21,6 +21,13 @@ private val authRetrofit = Retrofit.Builder()
             @Field("login") login: String,
             @Field("pass") password: String
         ): Response<AuthResponse>
+
+        // Push уведомления
+        @FormUrlEncoded
+        @POST("api/pushes")
+        suspend fun sendPushToken(
+            @Field("token") token: String
+        ): Response<Unit>
     }
 object AuthApi {
     val service: AuthApiService by lazy {

@@ -9,8 +9,10 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuProvider
 import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
@@ -19,15 +21,35 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
+import ru.netology.nmedia.service.PushService
 import ru.netology.nmedia.viewmodel.AuthViewModel
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
     private val authViewModel by viewModels<AuthViewModel>()
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            println("✅ Notification permission granted")
+        } else {
+            println("❌ Notification permission denied")
+            Snackbar.make(
+                findViewById(android.R.id.content),
+                "Уведомления отключены",
+                Snackbar.LENGTH_SHORT
+            ).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // 1. Создаем канал уведомлений
+        PushService.createNotificationChannel(this)
+
+        // 2. Запрашиваем разрешение на уведомления
         requestNotificationsPermission()
 
         addMenuProvider(
@@ -38,7 +60,6 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 ) {
                     menuInflater.inflate(R.menu.auth_menu, menu)
 
-                    // Наблюдаем за изменениями авторизации
                     authViewModel.isAuthorized.observe(this@AppActivity) { authorized ->
                         menu.setGroupVisible(R.id.unauthenticated, !authorized)
                         menu.setGroupVisible(R.id.authenticated, authorized)
@@ -48,14 +69,11 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
                     when (menuItem.itemId) {
                         R.id.signin -> {
-                            // Навигация к фрагменту аутентификации
                             findNavController(R.id.nav_host_fragment)
                                 .navigate(R.id.action_feedFragment_to_signInFragment)
                             true
                         }
-
                         R.id.signup -> {
-                            // Заглушка для регистрации
                             Snackbar.make(
                                 findViewById(android.R.id.content),
                                 "Registration will be implemented later",
@@ -63,7 +81,6 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                             ).show()
                             true
                         }
-
                         R.id.logout -> {
                             authViewModel.logout()
                             Snackbar.make(
@@ -73,7 +90,6 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                             ).show()
                             true
                         }
-
                         else -> false
                     }
             }
@@ -99,27 +115,33 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 )
         }
 
+        // 3. Проверяем Google Play Services и получаем FCM токен
         checkGoogleApiAvailability()
     }
 
     private fun requestNotificationsPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    println("✅ Notification permission already granted")
+                }
+                else -> {
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
         }
-
-        val permission = Manifest.permission.POST_NOTIFICATIONS
-
-        if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-            return
-        }
-
-        requestPermissions(arrayOf(permission), 1)
     }
 
     private fun checkGoogleApiAvailability() {
         with(GoogleApiAvailability.getInstance()) {
             val code = isGooglePlayServicesAvailable(this@AppActivity)
             if (code == ConnectionResult.SUCCESS) {
+                FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                    println("🔥 FCM Token: $token")
+                }
                 return@with
             }
             if (isUserResolvableError(code)) {
@@ -128,10 +150,6 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             }
             Toast.makeText(this@AppActivity, R.string.google_play_unavailable, Toast.LENGTH_LONG)
                 .show()
-        }
-
-        FirebaseMessaging.getInstance().token.addOnSuccessListener {
-            println(it)
         }
     }
 }

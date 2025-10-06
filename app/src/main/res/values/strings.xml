@@ -40,4 +40,7 @@
     <string name="authentication_success">Successfully signed in</string>
     <string name="authentication_failed">Authentication failed</string>
     <string name="signed_out">Signed out successfully</string>
+
+    <string name="channel_name">Messages</string>
+    <string name="channel_description">Notifications about new messages</string>
 </resources>

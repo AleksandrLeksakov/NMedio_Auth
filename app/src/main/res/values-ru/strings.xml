@@ -30,4 +30,6 @@
     <string name="authentication_success">Вход выполнен успешно</string>
     <string name="authentication_failed">Ошибка аутентификации</string>
     <string name="signed_out">Выход выполнен успешно</string>
+    <string name="channel_name">имя канала</string>
+    <string name="channel_description">описание канала</string>
 </resources>
