@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'com.google.devtools.ksp' // вместо устаревшего 'kotlin-kapt'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
+apply plugin: 'dagger.hilt.android.plugin'
 
 android {
     namespace "ru.netology.nmedia"
@@ -101,6 +102,10 @@ dependencies {
     implementation "com.github.bumptech.glide:okhttp3-integration:$glide_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
     implementation "com.google.android.gms:play-services-base:$play_services_base_version"
+
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    ksp "com.google.dagger:hilt-compiler:$hilt_version"
+
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$core_desugaring_version"
 
 }
