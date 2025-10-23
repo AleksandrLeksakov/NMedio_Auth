@@ -9,8 +9,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.internal.concurrent.TaskRunner.Companion.logger
 import okio.IOException
-import retrofit2.http.Multipart
-import ru.netology.nmedia.api.PostsApi
+import ru.netology.nmedia.api.PostsApiService
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.AttachmentType
@@ -25,18 +24,22 @@ import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
 import java.io.File
 
-class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
+class PostRepositoryImpl(
+    private val dao: PostDao,
+    private val postsApiService: PostsApiService
+) : PostRepository {
+
     override val data = dao.getAllVisible().map { it.toDto() }
     override val hiddenCount = dao.getHiddenCount()
+
     override suspend fun showAllHiddenPosts() {
         dao.showAllHiddenPosts()
-
     }
-
 
     override suspend fun getAll() {
         try {
-            val response = PostsApi.service.getAll()
+            // ✅ ИСПРАВЛЕНО: используем внедренный postsApiService
+            val response = postsApiService.getAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -53,7 +56,7 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
 
     override suspend fun save(post: Post, photo: File?) {
         try {
-            val  media = photo?.let { saveMedia(it) }
+            val media = photo?.let { saveMedia(it) }
 
             val postWithAttachment = media?.let {
                 post.copy(
@@ -61,7 +64,8 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
                 )
             } ?: post
 
-            val response = PostsApi.service.save(postWithAttachment)
+            // ✅ ИСПРАВЛЕНО: используем внедренный postsApiService
+            val response = postsApiService.save(postWithAttachment)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -77,22 +81,21 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
     }
 
     private suspend fun saveMedia(file: File): Media =
-        PostsApi.service.uploadFile(
+        // ✅ ИСПРАВЛЕНО: используем внедренный postsApiService
+        postsApiService.uploadFile(
             MultipartBody.Part.createFormData(
                 "file",
                 file.name,
                 file.asRequestBody()
-
             )
         )
-
-
 
     override suspend fun removeById(id: Long) {
         try {
             // Оптимистичное удаление
             dao.removeById(id)
-            val response = PostsApi.service.removeById(id)
+            // ✅ ИСПРАВЛЕНО: используем внедренный postsApiService
+            val response = postsApiService.removeById(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -119,10 +122,11 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
             )
             dao.insert(updatedPost)
 
+            // ✅ ИСПРАВЛЕНО: используем внедренный postsApiService
             val response = if (updatedPost.likedByMe) {
-                PostsApi.service.likeById(id)
+                postsApiService.likeById(id)
             } else {
-                PostsApi.service.dislikeById(id)
+                postsApiService.dislikeById(id)
             }
 
             if (!response.isSuccessful) {
@@ -159,7 +163,8 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
             delay(10_000)
             try {
                 val latestId = dao.getLatestId() ?: id
-                val response = PostsApi.service.getNewer(latestId)
+                // ✅ ИСПРАВЛЕНО: используем внедренный postsApiService
+                val response = postsApiService.getNewer(latestId)
                 if (!response.isSuccessful) {
                     throw ApiError(response.code(), response.message())
                 }
@@ -180,7 +185,6 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
         logger.severe("Flow error in getNewer: ${e.message}")
         throw AppError.from(e)
     }
-
 
     override suspend fun getLatestId(): Long? {
         return try {

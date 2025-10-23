@@ -3,6 +3,7 @@ package ru.netology.nmedia.viewmodel
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.*
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapLatest
@@ -19,6 +20,8 @@ import ru.netology.nmedia.repository.PostRepositoryImpl
 import ru.netology.nmedia.util.SingleLiveEvent
 import java.io.File
 import java.io.IOException
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 //private val PostViewModel.it: Post
 private val empty = Post(
@@ -35,45 +38,50 @@ private val empty = Post(
 
 )
 
-class PostViewModel(application: Application) : AndroidViewModel(application) {
-    // Репозиторий для работы с данными
-    private val repository: PostRepository =
-        PostRepositoryImpl(AppDb.getInstance(context = application).postDao())
+@HiltViewModel
+class PostViewModel @Inject constructor(
+    private val repository: PostRepository,
+    private val appAuth: AppAuth
+) : ViewModel() {
+
+
 
     // Основные данные постов (фильтруем скрытые)
-    val data: LiveData<FeedModel> = AppAuth.getInstance().state.flatMapLatest { token ->
+    val data: LiveData<FeedModel> = appAuth.state.flatMapLatest { token ->
         repository.data
-            .map {
-                it.map { post -> post.copy(ownedByMe = token?.id == post.authorId) }
+            .map { posts ->
+                posts.map { post -> post.copy(ownedByMe = token?.id == post.authorId) }
             }
             .map { posts ->
-            FeedModel(
-                posts = posts,
-                empty = posts.isEmpty()
-            )
-        }
-    }
+                FeedModel(
+                    posts = posts,
+                    empty = posts.isEmpty()
+                )
+            }
+    }.asLiveData(Dispatchers.Default)
 
-
-        .asLiveData(Dispatchers.Default)
 
     // сохранить фото
     private val _photo = MutableLiveData<PhotoModel?>(null)
 val photo: LiveData<PhotoModel?>
     get() = _photo
 
+
     // Количество скрытых постов
     val hiddenCount: LiveData<Int> = repository.hiddenCount
         .asLiveData()
+
 
     // Событие прокрутки к началу списка
     private val _scrollToTopEvent = SingleLiveEvent<Unit>()
     val scrollToTopEvent: LiveData<Unit> = _scrollToTopEvent
 
+
     // Состояние загрузки/обновления
     private val _dataState = MutableLiveData<FeedModelState>()
     val dataState: LiveData<FeedModelState>
         get() = _dataState
+
 
     // Событие для показа новых постов
     private val _showNewPostsEvent = SingleLiveEvent<Unit>()
@@ -92,13 +100,14 @@ val photo: LiveData<PhotoModel?>
         loadNewPosts()
     }
 
+
     fun savePhoto(uri: Uri, file: File) {
         _photo.value = PhotoModel(uri, file)
     }
-
     fun removePhoto() {
         _photo.value = null
     }
+
 
     // Загрузка новых постов (свежих чем текущие)
     private fun loadNewPosts() {

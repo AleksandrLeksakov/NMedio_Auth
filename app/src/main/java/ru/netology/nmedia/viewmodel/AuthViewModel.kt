@@ -5,17 +5,23 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import retrofit2.Response
-import ru.netology.nmedia.api.AuthApi  // Используем AuthApi вместо PostsApi
-import ru.netology.nmedia.dto.AuthResponse
+import ru.netology.nmedia.api.AuthApiService
 import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.dto.AuthResponse
+import javax.inject.Inject
 
-class AuthViewModel : ViewModel() {
-    val isAuthorized: LiveData<Boolean> = AppAuth.getInstance()
-        .state
+
+@HiltViewModel
+class AuthViewModel@Inject constructor(
+    private val appAuth: AppAuth,
+    private val authApiService: AuthApiService
+) : ViewModel() {
+    val isAuthorized: LiveData<Boolean> = appAuth.state
         .map { it != null }
         .asLiveData(Dispatchers.Default)
 
@@ -26,7 +32,7 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 _authState.value = AuthState.Loading
-                val response = AuthApi.service.authenticate(login, password)
+                val response = authApiService.authenticate(login, password)
                 handleAuthResponse(response)
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "Network error")
@@ -38,7 +44,8 @@ class AuthViewModel : ViewModel() {
         if (response.isSuccessful) {
             val authResponse = response.body()
             authResponse?.let {
-                AppAuth.getInstance().saveAuth(it.id, it.token)
+                // ✅ ИСПРАВЛЕНО: используем внедренный appAuth
+                appAuth.saveAuth(it.id, it.token)
                 _authState.value = AuthState.Success
             } ?: run {
                 _authState.value = AuthState.Error("Invalid response")
@@ -53,7 +60,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun logout() {
-        AppAuth.getInstance().removeAuth()
+        appAuth.removeAuth()
         _authState.value = AuthState.Idle
     }
 }
