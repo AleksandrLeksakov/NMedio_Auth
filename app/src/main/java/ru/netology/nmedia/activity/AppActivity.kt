@@ -24,6 +24,7 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.service.PushService
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import javax.inject.Inject
 
 
 //@AndroidEntryPoint
@@ -32,6 +33,11 @@ import ru.netology.nmedia.viewmodel.AuthViewModel
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
+    @Inject
+    lateinit var googleApiAvailability: GoogleApiAvailability
+
+    @Inject
+    lateinit var firebaseMessaging: FirebaseMessaging
     private val authViewModel by viewModels<AuthViewModel>()
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -142,10 +148,10 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
     }
 
     private fun checkGoogleApiAvailability() {
-        with(GoogleApiAvailability.getInstance()) {
+        with(googleApiAvailability) {
             val code = isGooglePlayServicesAvailable(this@AppActivity)
             if (code == ConnectionResult.SUCCESS) {
-                FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                firebaseMessaging.token.addOnSuccessListener { token ->
                     println("🔥 FCM Token: $token")
                 }
                 return@with
