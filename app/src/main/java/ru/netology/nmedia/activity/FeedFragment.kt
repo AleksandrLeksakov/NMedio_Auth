@@ -11,6 +11,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -22,6 +23,7 @@ import ru.netology.nmedia.viewmodel.PostViewModel
 
 
 
+@AndroidEntryPoint
 class FeedFragment : Fragment() {
     // Переменная для хранения Snackbar (может быть null)
     private var snackbar: Snackbar? = null

@@ -10,7 +10,10 @@ import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.databinding.FragmentImageBinding
 import com.bumptech.glide.Glide
+import dagger.hilt.android.AndroidEntryPoint
 
+
+@AndroidEntryPoint
 class ImageFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,

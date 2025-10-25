@@ -32,7 +32,7 @@ private val okhttp = OkHttpClient.Builder()
     .addInterceptor { chain ->
       val request = AppAuth.getInstance().state.value?.token?.let {token ->
             chain.request().newBuilder()
-                .addHeader("Authorization","Bearer $token")
+                .addHeader("Authorization",token)
                 .build()
         } ?: chain.request()
         chain.proceed(request)

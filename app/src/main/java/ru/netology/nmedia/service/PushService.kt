@@ -14,6 +14,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlin.random.Random
@@ -22,6 +23,8 @@ import ru.netology.nmedia.api.AuthApi
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.PushMessage
 
+
+@AndroidEntryPoint
 class PushService : FirebaseMessagingService() {
 
     private val gson = Gson()

@@ -26,7 +26,10 @@ import ru.netology.nmedia.service.PushService
 import ru.netology.nmedia.viewmodel.AuthViewModel
 
 
+//@AndroidEntryPoint
+
 @AndroidEntryPoint
+
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
     private val authViewModel by viewModels<AuthViewModel>()
